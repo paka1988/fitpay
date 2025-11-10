@@ -5,6 +5,7 @@
   "main": "index.js",
   "dependencies": {
     "accepts": "^2.0.0",
+    "axios": "^1.13.2",
     "body-parser": "^2.2.0",
     "bytes": "^3.1.2",
     "call-bind-apply-helpers": "^1.0.2",
@@ -15,6 +16,7 @@
     "cookie-signature": "^1.2.2",
     "debug": "^4.4.3",
     "depd": "^2.0.0",
+    "dotenv": "^17.2.3",
     "dunder-proto": "^1.0.1",
     "ee-first": "^1.1.1",
     "encodeurl": "^2.0.0",
@@ -24,6 +26,7 @@
     "escape-html": "^1.0.3",
     "etag": "^1.8.1",
     "express": "^5.1.0",
+    "express-session": "^1.18.2",
     "finalhandler": "^2.1.0",
     "forwarded": "^0.2.0",
     "fresh": "^2.0.0",
@@ -72,7 +75,9 @@
     "wrappy": "^1.0.2"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node src/app.js",
+    "dev": "nodemon src/app.js"
   },
   "repository": {
     "type": "git",
