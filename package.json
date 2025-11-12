@@ -7,6 +7,7 @@
     "accepts": "^2.0.0",
     "axios": "^1.13.2",
     "body-parser": "^2.2.0",
+    "bootstrap": "^5.3.8",
     "bytes": "^3.1.2",
     "call-bind-apply-helpers": "^1.0.2",
     "call-bound": "^1.0.4",
@@ -76,6 +77,8 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+    "copy-bootstrap": "mkdir -p src/public/vendor/bootstrap && cp -r node_modules/bootstrap/dist/* src/public/vendor/bootstrap/",
+    "postinstall": "npm run copy-bootstrap",
     "start": "node src/app.js",
     "dev": "nodemon src/app.js"
   },

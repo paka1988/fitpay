@@ -165,3 +165,6 @@ Temporary Items
 .apdisk
 
 .ssh
+
+# Generated files
+src/public/vendor

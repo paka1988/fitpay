@@ -7,8 +7,10 @@ const ensureAuthenticated = require('./middleware/authCheck');
 
 const app = express();
 
+// Serve Bootstrap directly from node_modules
+app.use('/vendor/bootstrap', express.static(path.join(__dirname, 'node_modules/bootstrap/dist')));
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({extended: true}));
 app.use(express.json());
 
 // Session-Setup (WICHTIG)
@@ -17,7 +19,7 @@ app.use(
         secret: process.env.SESSION_SECRET || 'supersecret',
         resave: false,
         saveUninitialized: false,
-        cookie: { secure: false }, // secure:true nur mit HTTPS
+        cookie: {secure: false}, // secure:true nur mit HTTPS
     })
 );
 
