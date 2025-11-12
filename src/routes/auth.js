@@ -3,14 +3,13 @@ const router = express.Router();
 const axios = require('axios');
 const qs = require('querystring');
 
-// Environment variables
 const { FITBIT_CLIENT_ID, FITBIT_CLIENT_SECRET, REDIRECT_URI } = process.env;
 
 // ----------------------------------------
-// 1️⃣ Redirect to Fitbit Authorization Page
+// 1️⃣ Fitbit Login starten
 // ----------------------------------------
 router.get('/fitbit', (req, res) => {
-    const state = Math.random().toString(36).substring(2, 15); // Random state
+    const state = Math.random().toString(36).substring(2, 15);
     req.session.oauthState = state;
 
     const authUrl = `https://www.fitbit.com/oauth2/authorize?${qs.stringify({
@@ -25,19 +24,19 @@ router.get('/fitbit', (req, res) => {
 });
 
 // ----------------------------------------
-// 2️⃣ Callback from Fitbit after login
+// 2️⃣ Fitbit Callback (nach erfolgreichem Login)
 // ----------------------------------------
 router.get('/fitbit/callback', async (req, res) => {
     const { code, state } = req.query;
 
-    // Check state for CSRF protection
+    // 🧩 CSRF-Schutz
     if (state !== req.session.oauthState) {
         return res.status(403).send('Ungültiger state-Parameter');
     }
 
     try {
         // ----------------------------------------
-        // 3️⃣ Exchange authorization code for access token
+        // 3️⃣ Authorization Code gegen Access Token tauschen
         // ----------------------------------------
         const tokenResponse = await axios.post(
             'https://api.fitbit.com/oauth2/token',
@@ -56,23 +55,39 @@ router.get('/fitbit/callback', async (req, res) => {
         );
 
         // ----------------------------------------
-        // 4️⃣ Store tokens in session (or DB)
+        // 4️⃣ Token speichern (Session)
         // ----------------------------------------
         const { access_token, refresh_token, user_id } = tokenResponse.data;
         req.session.accessToken = access_token;
         req.session.refreshToken = refresh_token;
+        req.session.userId = user_id;
 
-        // Send simple success page
-        res.send(`
-      <h2>Fitbit OAuth erfolgreich!</h2>
-      <p>User ID: ${user_id}</p>
-      <p>Access Token wurde in der Session gespeichert.</p>
-      <a href="/fitbit/profile">Profil anzeigen</a>
-    `);
+        console.log(`✅ Fitbit login erfolgreich für user_id=${user_id}`);
+
+        // ----------------------------------------
+        // 5️⃣ Redirect zum Dashboard
+        // ----------------------------------------
+        res.redirect('/dashboard.html');
     } catch (err) {
-        console.error(err.response?.data || err.message);
-        res.status(500).send('Fehler beim Token-Austausch');
+        console.error('❌ Fehler beim Token-Austausch:', err.response?.data || err.message);
+        res.status(500).send('Fehler beim Fitbit Login. Details siehe Server-Logs.');
     }
+});
+
+// ----------------------------------------
+// 6️⃣ Logout (optional, für Button später)
+// ----------------------------------------
+router.get('/logout', (req, res) => {
+    req.session.destroy(() => {
+        res.redirect('/index.html');
+    });
+});
+
+// ----------------------------------------
+// 7️⃣ Auth-Status-Check (Frontend-Fallback)
+// ----------------------------------------
+router.get('/status', (req, res) => {
+    res.json({ authenticated: !!req.session.accessToken });
 });
 
 module.exports = router;

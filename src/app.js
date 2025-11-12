@@ -1,33 +1,32 @@
 require('dotenv').config();
 const express = require('express');
-const path = require('path');       // wichtig für Dateipfade
 const session = require('express-session');
+const path = require('path');
 const authRoutes = require('./routes/auth');
-const fitbitRoutes = require('./routes/fitbit');
+const ensureAuthenticated = require('./middleware/authCheck');
 
 const app = express();
+
+app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-app.use(session({ secret: 'fitbit_secret', resave: false, saveUninitialized: true }));
 
-// ----------------------------
-// 1️⃣ HTML-Dateien ausliefern
-// ----------------------------
+// Session-Setup (WICHTIG)
+app.use(
+    session({
+        secret: process.env.SESSION_SECRET || 'supersecret',
+        resave: false,
+        saveUninitialized: false,
+        cookie: { secure: false }, // secure:true nur mit HTTPS
+    })
+);
 
-// Root → index.html
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'views', 'index.html'));
-});
-
-// Erfolg-Seite → success.html
-app.get('/success', (req, res) => {
-    res.sendFile(path.join(__dirname, 'views', 'success.html'));
-});
-
-// ----------------------------
-// 2️⃣ Routes einbinden
-// ----------------------------
+// Auth-Routen
 app.use('/auth', authRoutes);
-app.use('/fitbit', fitbitRoutes);
 
-// Server starten
-app.listen(5000, () => console.log('Server läuft auf http://localhost:5000'));
+// Geschützte Seiten
+app.get(['/dashboard.html', '/profile.html', '/activities.html', '/earnings.html'], ensureAuthenticated, (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', req.path));
+});
+
+app.listen(process.env.PORT || 3000, () => console.log('🚀 Server läuft'));
