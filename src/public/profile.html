@@ -11,11 +11,7 @@
     <script src="/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script defer src="/js/app.js"></script>
 </head>
-<body>
-<!-- 🔒 Login-Status sofort prüfen -->
-<script>
-    checkAuth();
-</script>
+<body onload="checkAuth(); loadProfile()">
 <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
     <div class="container-fluid">
         <a class="navbar-brand" href="/dashboard.html">FitPay</a>
@@ -26,21 +22,13 @@
         </ul>
     </div>
 </nav>
+
 <main class="container mt-4">
     <h2>Mein Profil</h2>
-    <div id="profile"></div>
+
+    <div id="profile" class="row g-3">
+        <!-- Profile Card wird hier per JS eingefügt -->
+    </div>
 </main>
-<script>
-    fetchData('/fitbit/profile')
-        .then(res => res.json())
-        .then(data => {
-            document.getElementById('profile').innerHTML = `
-          <p><strong>Name:</strong> ${data.user.displayName}</p>
-          <p><strong>Alter:</strong> ${data.user.age}</p>
-          <p><strong>Schritte-Ziel:</strong> ${data.user.topBadges.length} Badges</p>
-        `;
-        })
-        .catch(err => console.error('Error loading profile:', err));
-</script>
 </body>
 </html>

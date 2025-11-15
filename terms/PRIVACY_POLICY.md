@@ -15,7 +15,7 @@ Bitte lies diese Bedingungen sorgfältig durch. Durch die Nutzung der App erklä
 Max Mustermann
 Musterstraße 1
 12345 Musterstadt, Deutschland
-E-Mail: [support@fitpay.app](mailto:support@fitpay.app)
+E-Mail: [support@fitpay.server](mailto:support@fitpay.server)
 
 *(Ersetze diese Angaben durch deine echten Kontaktdaten.)*
 
@@ -87,6 +87,6 @@ FitPay führt **keine echten Geldtransaktionen** durch. Die angezeigten Beträge
 ---
 
 **Kontakt:**
-[support@fitpay.app](mailto:support@fitpay.app)
+[support@fitpay.server](mailto:support@fitpay.server)
 
 *(Diese Vorlage dient als allgemeine Orientierung und ersetzt keine individuelle Rechtsberatung.)*

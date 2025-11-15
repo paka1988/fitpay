@@ -79,8 +79,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "copy-bootstrap": "mkdir -p src/public/vendor/bootstrap && cp -r node_modules/bootstrap/dist/* src/public/vendor/bootstrap/",
     "postinstall": "npm run copy-bootstrap",
-    "start": "node src/app.js",
-    "dev": "nodemon src/app.js"
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js"
   },
   "repository": {
     "type": "git",

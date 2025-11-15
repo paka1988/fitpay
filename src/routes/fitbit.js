@@ -18,4 +18,9 @@ router.get('/rewards', async (req, res) => {
     res.json({ activities, reward });
 });
 
+router.get('/today', async (req, res) => {
+    const data = await fitbitService.getTodayActivities(req.session.accessToken);
+    res.json(data);
+});
+
 module.exports = router;
