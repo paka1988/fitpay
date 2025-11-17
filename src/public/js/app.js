@@ -192,6 +192,42 @@ function showErrorMessage(message) {
     document.body.appendChild(alertDiv);
 }
 
+// Dynamically load navigation and footer
+document.addEventListener('DOMContentLoaded', () => {
+    loadPartial('/partials/navigation.html', 'navigation-container');
+    loadPartial('/partials/footer.html', 'footer-container');
+});
+
+/**
+ * Loads an external HTML partial into a container element.
+ * Always returns a resolved Promise<string>.
+ */
+async function loadPartial(filePath, containerId) {
+    try {
+        const res = await fetch(filePath);
+
+        if (!res.ok) {
+            console.error(`Error loading partial: ${filePath}`);
+            return ''; // Always return a string
+        }
+
+        const html = await res.text();
+
+        const container = document.getElementById(containerId);
+        if (container) {
+            container.innerHTML = html;
+        } else {
+            console.warn(`Container #${containerId} not found`);
+        }
+
+        return html; // Always return a string
+    } catch (err) {
+        console.error(`Error injecting partial (${filePath}):`, err);
+        return ''; // Always return a string
+    }
+}
+
+
 // --- Global verfügbar machen ---
 window.checkAuth = checkAuth;
 window.fetchData = fetchData;
