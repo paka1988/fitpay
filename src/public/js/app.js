@@ -34,11 +34,11 @@ async function fetchData(endpoint) {
 // --- Dashboard laden ---
 async function loadDashboard() {
     const data = await fetchData('/fitbit/today');
-    if (!data?.summary) return;
+    if (!data.activities) return;
 
-    const summary = data.summary;
+    const summary = data.activities.summary;
     const activeMinutes = (summary.fairlyActiveMinutes || 0) + (summary.veryActiveMinutes || 0);
-    const earnings = activeMinutes / 30;
+    const earnings = data.reward;
 
     const setText = (id, value) => {
         const el = document.getElementById(id);
@@ -53,7 +53,6 @@ async function loadDashboard() {
 // Beispielhafte Berechnung: z. B. 1 € pro Aktivität über 30 Minuten
 async function loadEarnings() {
     const container = document.getElementById('earnings');
-    container.innerHTML = '<p>Lade Einnahmen...</p>';
 
     try {
         const data = await fetchData('/fitbit/rewards'); // oder fetchFitbitRewards()
@@ -62,35 +61,17 @@ async function loadEarnings() {
             return;
         }
 
-        const { activities, reward } = data;
+        const {activities, reward} = data;
         const activeMinutes = (activities.summary.fairlyActiveMinutes || 0) + (activities.summary.veryActiveMinutes || 0);
 
-        container.innerHTML = `
-        <div class="col-12 col-md-6 col-lg-4">
-            <div class="card shadow-sm text-center">
-                <div class="card-body">
-                    <h5 class="card-title">Aktive Minuten</h5>
-                    <p class="card-text display-6">${activeMinutes}</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-12 col-md-6 col-lg-4">
-            <div class="card shadow-sm text-center">
-                <div class="card-body">
-                    <h5 class="card-title">Schritte</h5>
-                    <p class="card-text display-6">${activities.summary.steps || 0}</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-12 col-md-6 col-lg-4">
-            <div class="card shadow-sm text-center">
-                <div class="card-body">
-                    <h5 class="card-title">Verdientes Geld</h5>
-                    <p class="card-text display-6">€${reward.toFixed(2)}</p>
-                </div>
-            </div>
-        </div>
-        `;
+        const setText = (id, value) => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = value;
+        };
+
+        setText('active-minutes', activeMinutes);
+        setText('steps', (activities.summary.steps || 0).toLocaleString());
+        setText('earning-details', `€${reward.toFixed(2)}`);
     } catch (err) {
         console.error('Error loading earnings:', err);
         container.innerHTML = '<p class="text-danger">Fehler beim Laden der Einnahmen.</p>';

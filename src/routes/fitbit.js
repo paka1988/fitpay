@@ -15,12 +15,13 @@ router.get('/rewards', async (req, res) => {
     const token = req.session.accessToken;
     const activities = await fitbitService.getTodayActivities(token);
     const reward = rewardService.calculateReward(activities);
-    res.json({ activities, reward });
+    res.json({activities, reward});
 });
 
 router.get('/today', async (req, res) => {
-    const data = await fitbitService.getTodayActivities(req.session.accessToken);
-    res.json(data);
+    const activities = await fitbitService.getTodayActivities(req.session.accessToken);
+    const reward = rewardService.calculateReward(activities)
+    res.json({activities, reward});
 });
 
 module.exports = router;
