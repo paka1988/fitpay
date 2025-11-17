@@ -81,52 +81,26 @@ async function loadEarnings() {
 // --- Activities Page ---
 async function loadActivities() {
     const container = document.getElementById('activities');
-    container.innerHTML = '<p>Lade Aktivitäten...</p>';
+
+    const setText = (id, value) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = value;
+    };
 
     try {
         const data = await fetchData('/fitbit/today'); // nutzt fetchFitbitDay() Utility
-        if (!data) {
+        if (!data.activities) {
             container.innerHTML = '<p class="text-danger">Fehler beim Laden der Aktivitäten.</p>';
             return;
         }
 
-        const summary = data.summary || {};
+        const summary = data.activities.summary || {};
         const activeMinutes = (summary.fairlyActiveMinutes || 0) + (summary.veryActiveMinutes || 0);
 
-        container.innerHTML = `
-        <div class="col-12 col-md-6 col-lg-3">
-            <div class="card shadow-sm text-center">
-                <div class="card-body">
-                    <h5 class="card-title">Schritte</h5>
-                    <p class="card-text display-6">${summary.steps || 0}</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-12 col-md-6 col-lg-3">
-            <div class="card shadow-sm text-center">
-                <div class="card-body">
-                    <h5 class="card-title">Kalorien</h5>
-                    <p class="card-text display-6">${summary.caloriesOut || 0}</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-12 col-md-6 col-lg-3">
-            <div class="card shadow-sm text-center">
-                <div class="card-body">
-                    <h5 class="card-title">Aktive Minuten</h5>
-                    <p class="card-text display-6">${activeMinutes}</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-12 col-md-6 col-lg-3">
-            <div class="card shadow-sm text-center">
-                <div class="card-body">
-                    <h5 class="card-title">Entfernung (km)</h5>
-                    <p class="card-text display-6">${(summary.distances?.[0]?.distance || 0).toFixed(2)}</p>
-                </div>
-            </div>
-        </div>
-        `;
+        setText('steps', (summary.steps || 0).toLocaleString());
+        setText('calories', (summary.caloriesOut || 0).toLocaleString());
+        setText('active-minutes', activeMinutes);
+        setText('distance', `${(summary.distances?.[0]?.distance || 0).toFixed(2)}`);
     } catch (err) {
         console.error('Error loading activities:', err);
         container.innerHTML = '<p class="text-danger">Fehler beim Laden der Aktivitäten.</p>';
