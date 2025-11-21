@@ -1,3 +1,4 @@
+require('./loadEnv');
 require('dotenv').config();
 const express = require('express');
 const session = require('express-session');
@@ -5,6 +6,7 @@ const path = require('path');
 const authRoutes = require('./routes/auth');
 const fitbitRoutes = require('./routes/fitbit');
 const ensureAuthenticated = require('./middleware/authCheck');
+
 
 const server = express();
 
