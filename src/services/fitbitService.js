@@ -5,7 +5,7 @@ const {logAxiosError} = require("../utils/logger");
 async function getProfile(accessToken) {
     try {
         const res = await axios.get('https://api.fitbit.com/1/user/-/profile.json', {
-            headers: { Authorization: `Bearer ${accessToken}` },
+            headers: {Authorization: `Bearer ${accessToken}`},
         });
         return res.data;
     } catch (err) {
@@ -21,7 +21,7 @@ async function getTodayActivities(accessToken) {
         const today = new Date().toISOString().split('T')[0]; // e.g., '2025-11-10'
 
         const res = await axios.get(`https://api.fitbit.com/1/user/-/activities/date/${today}.json`, {
-            headers: { Authorization: `Bearer ${accessToken}` },
+            headers: {Authorization: `Bearer ${accessToken}`},
         });
         return res.data;
     } catch (err) {
@@ -30,4 +30,14 @@ async function getTodayActivities(accessToken) {
     }
 }
 
-module.exports = { getProfile, getTodayActivities };
+async function getDailyActivities(accessToken, date) {
+    const res = await axios.get(
+        `https://api.fitbit.com/1/user/-/activities/date/${date}.json`,
+        {headers: {Authorization: `Bearer ${accessToken}`}}
+    );
+
+    const activities = res.data.activities || [];
+    return {date, activities};
+}
+
+module.exports = {getProfile, getTodayActivities, getDailyActivities};

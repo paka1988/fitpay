@@ -13,15 +13,14 @@ router.get('/profile', async (req, res) => {
 
 router.get('/rewards', async (req, res) => {
     const token = req.session.accessToken;
+
+    const profile = await fitbitService.getProfile(token);
+    const today = new Date().toISOString().split('T')[0]; // e.g., '2025-11-10'
+    const total_activities = await rewardService.syncRewardsFromRange(token, req.session.userId, profile.user.memberSince, today);
     const activities = await fitbitService.getTodayActivities(token);
     const reward = rewardService.calculateReward(activities);
-    res.json({activities, reward});
-});
-
-router.get('/today', async (req, res) => {
-    const activities = await fitbitService.getTodayActivities(req.session.accessToken);
-    const reward = rewardService.calculateReward(activities)
-    res.json({activities, reward});
+    const reward_total = total_activities.reduce((sum, {activities}) => sum + activities, 0);
+    res.json({activities, reward, reward_total});
 });
 
 module.exports = router;

@@ -33,7 +33,7 @@ async function fetchData(endpoint) {
 
 // --- Dashboard laden ---
 async function loadDashboard() {
-    const data = await fetchData('/fitbit/today');
+    const data = await fetchData('/fitbit/rewards');
     if (!data.activities) return;
 
     const summary = data.activities.summary;
@@ -48,6 +48,7 @@ async function loadDashboard() {
     setText('active-minutes', activeMinutes);
     setText('steps', (summary.steps || 0).toLocaleString());
     setText('earnings', `€${earnings.toFixed(2)}`);
+    setText('earnings_total', `€${data.reward_total.toFixed(2)}`);
 }
 
 // Beispielhafte Berechnung: z. B. 1 € pro Aktivität über 30 Minuten
@@ -117,6 +118,7 @@ async function loadProfile() {
             <div class="card shadow-sm">
                 <div class="card-body">
                     <h5 class="card-title">${data.user.displayName}</h5>
+                    <p class="card-text"><strong>Mitglied Seit:</strong> ${data.user.memberSince}</p></p>
                     <p class="card-text"><strong>Alter:</strong> ${data.user.age}</p>
                     <p class="card-text"><strong>Schritte-Ziel:</strong> ${data.user.topBadges.length} Badges</p>
                     ${data.user.avatar ? `<img src="${data.user.avatar}" class="img-fluid rounded mt-3" alt="Avatar">` : ''}
