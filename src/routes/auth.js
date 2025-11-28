@@ -2,8 +2,10 @@ const express = require('express');
 const router = express.Router();
 const axios = require('axios');
 const qs = require('querystring');
+const userService = require('../services/userService')
+const User = require('../entities/user')
 
-const { FITBIT_CLIENT_ID, FITBIT_CLIENT_SECRET, REDIRECT_URI } = process.env;
+const {FITBIT_CLIENT_ID, FITBIT_CLIENT_SECRET, REDIRECT_URI} = process.env;
 
 // ----------------------------------------
 // 1️⃣ Fitbit Login starten
@@ -27,7 +29,7 @@ router.get('/fitbit', (req, res) => {
 // 2️⃣ Fitbit Callback (nach erfolgreichem Login)
 // ----------------------------------------
 router.get('/fitbit/callback', async (req, res) => {
-    const { code, state } = req.query;
+    const {code, state} = req.query;
 
     // 🧩 CSRF-Schutz
     if (state !== req.session.oauthState) {
@@ -57,7 +59,7 @@ router.get('/fitbit/callback', async (req, res) => {
         // ----------------------------------------
         // 4️⃣ Token speichern (Session)
         // ----------------------------------------
-        const { access_token, refresh_token, user_id } = tokenResponse.data;
+        const {access_token, refresh_token, user_id, expires_in} = tokenResponse.data;
         req.session.accessToken = access_token;
         req.session.refreshToken = refresh_token;
         req.session.userId = user_id;
@@ -65,7 +67,19 @@ router.get('/fitbit/callback', async (req, res) => {
         console.log(`✅ Fitbit login erfolgreich für user_id=${user_id}`);
 
         // ----------------------------------------
-        // 5️⃣ Redirect zum Dashboard
+        // 5 User speichern (Session)
+        // ----------------------------------------
+        const user = new User({
+            userId: user_id,
+            accessToken: access_token,
+            refreshToken: refresh_token,
+            tokenExpiresAt: new Date(Date.now() + expires_in * 1000)
+        });
+        await userService.saveUser(user)
+        console.log(`✅ Fitbit user saved/updated for user_id=${user_id}`);
+
+        // ----------------------------------------
+        // 6 Redirect zum Dashboard
         // ----------------------------------------
         res.redirect('/dashboard.html');
     } catch (err) {
@@ -87,7 +101,7 @@ router.get('/logout', (req, res) => {
 // 7️⃣ Auth-Status-Check (Frontend-Fallback)
 // ----------------------------------------
 router.get('/status', (req, res) => {
-    res.json({ authenticated: !!req.session.accessToken });
+    res.json({authenticated: !!req.session.accessToken});
 });
 
 module.exports = router;
