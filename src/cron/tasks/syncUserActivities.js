@@ -2,49 +2,63 @@ const {findAllUsers} = require('../../services/userService')
 const {syncRewardsFromRange} = require('../../services/rewardService')
 const {getAPIRequestLimit} = require('../../services/fitbitService')
 
-exports.task = (ctx) => {
-
-    const syncedUsers = [];
-
-    findAllUsers().then(users => {
+exports.task = async (ctx) => {
+    try {
+        const users = await findAllUsers();
 
         if (!users?.length) {
-            console.error('No users found');
+            console.warn('No users found');
+            return 'No users synchronized.';
         }
-        let today = new Date().toISOString().split('T')[0];
-        users.forEach(user => {
 
-            let lastSync = user.lastSync || user.memberSince;
-            if (!lastSync || isNaN(new Date(lastSync).getTime())) {
-                console.error(`Invalid date for lastSync or memberSince: ${lastSync}`);
+        const today = new Date().toISOString().split('T')[0];
+        const syncedUsers = [];
+
+        const promises = users.map(async (user) => {
+            const lastSync = user.lastSync || user.memberSince;
+
+            if (!isValidDate(lastSync)) {
+                console.error(`Invalid date for user ${user.userId}: ${lastSync}`);
                 return;
             }
-            let days = calculateDays(lastSync, today)
-            if (days < getAPIRequestLimit()) {
-                syncRewardsFromRange(user.accessToken, user.userId, user.lastSync, today)
-                    .catch(err => {
-                        console.error('Failed to sync user: ' + user.userId, err);
-                    })
-                syncedUsers.push(user)
-            } else {
-                let lastSyncDate = new Date(user.lastSync);
-                let lastSyncPlusRequestLimit = new Date(lastSyncDate);
-                lastSyncPlusRequestLimit.setDate(lastSyncDate.getDate() + getAPIRequestLimit());
-                syncRewardsFromRange(user.accessToken, user.userId, user.lastSync, lastSyncPlusRequestLimit)
-                    .catch(err => {
-                        console.error('Failed to sync user: ' + user.userId, err);
-                    })
-                syncedUsers.push(user)
+
+            const daysDiff = calculateDays(lastSync, today);
+            const limit = getAPIRequestLimit();
+
+            const endDate = daysDiff < limit ? today : datePlusDays(lastSync, limit);
+
+            try {
+                await syncRewardsFromRange(user.accessToken, user.userId, lastSync, endDate);
+                syncedUsers.push(user.userId);
+            } catch (error) {
+                console.error(`User ${user.userId} sync failed:`, error);
             }
-        })
-    }).catch(error => {
-        console.error('Failed to fetch users:', error);
-    });
+        });
 
-    const usersSynced = syncedUsers.map(user => user.userId).join(',');
+        await Promise.all(promises);
 
-    return 'Task finished synchronization for users: ' + usersSynced;
+        if (!syncedUsers.length) {
+            return 'Sync finished, but no users were updated.';
+        }
+
+        return `Task finished synchronization for users: ${syncedUsers.join(', ')}`;
+
+    } catch (error) {
+        console.error('User sync task failed:', error);
+        return 'Task failed — check logs for details.';
+    }
 };
+
+// --- Helpers ---
+function isValidDate(date) {
+    return date && !isNaN(new Date(date).getTime());
+}
+
+function datePlusDays(dateStr, days) {
+    const date = new Date(dateStr);
+    date.setDate(date.getDate() + days);
+    return date;
+}
 
 function calculateDays(startDate, endDate) {
     let start = new Date(startDate);

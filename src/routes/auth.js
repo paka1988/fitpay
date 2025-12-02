@@ -3,6 +3,7 @@ const router = express.Router();
 const axios = require('axios');
 const qs = require('querystring');
 const userService = require('../services/userService')
+const fitbitService = require('../services/fitbitService')
 const User = require('../entities/user')
 
 const {FITBIT_CLIENT_ID, FITBIT_CLIENT_SECRET, REDIRECT_URI} = process.env;
@@ -69,13 +70,17 @@ router.get('/fitbit/callback', async (req, res) => {
         // ----------------------------------------
         // 5 User speichern (Session)
         // ----------------------------------------
-        const user = new User({
+        const existingUser = await userService.findUserById(user_id);
+        const profile = await fitbitService.getProfile(access_token)
+        await userService.saveUser({
             userId: user_id,
             accessToken: access_token,
             refreshToken: refresh_token,
-            tokenExpiresAt: new Date(Date.now() + expires_in * 1000)
-        });
-        await userService.saveUser(user)
+            tokenExpiresAt: new Date(Date.now() + expires_in * 1000),
+            memberSince: profile.user.memberSince,
+            createdAt: Date.now(),
+            lastSync: existingUser ? existingUser.lastSync : profile.user.memberSince
+        })
         console.log(`✅ Fitbit user saved/updated for user_id=${user_id}`);
 
         // ----------------------------------------

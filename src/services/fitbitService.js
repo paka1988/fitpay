@@ -1,6 +1,8 @@
 const axios = require('axios');
 const {logAxiosError} = require("../utils/logger");
 
+const {FITBIT_API_BASE_URL} = process.env;
+
 
 async function getProfile(accessToken) {
     try {
@@ -31,13 +33,19 @@ async function getTodayActivities(accessToken) {
 }
 
 async function getDailyActivities(accessToken, date) {
-    const res = await axios.get(
-        `https://api.fitbit.com/1/user/-/activities/date/${date}.json`,
-        {headers: {Authorization: `Bearer ${accessToken}`}}
-    );
+
+    const url = `${FITBIT_API_BASE_URL}/1/user/-/activities/date/${date}.json`;
+
+    const res = await axios.get(url, {
+        headers: {Authorization: `Bearer ${accessToken}`}
+    });
 
     const activities = res.data.activities || [];
     return {date, activities};
 }
 
-module.exports = {getProfile, getTodayActivities, getDailyActivities};
+function getAPIRequestLimit() {
+    return 2;
+}
+
+module.exports = {getProfile, getTodayActivities, getDailyActivities, getAPIRequestLimit};

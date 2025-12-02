@@ -1,6 +1,7 @@
 const pool = require('../db/dbconnection');
 const fitbitService = require('../services/fitbitService');
-
+const {findAllUsers, saveUser} = require("./userService");
+const User = require("../entities/user");
 
 function calculateReward(activities) {
     const workouts = activities?.activities || [];
@@ -38,25 +39,40 @@ async function getRewardsSummary(userId, startDate, endDate) {
 }
 
 async function syncRewardsFromRange(accessToken, userId, startDate, endDate) {
+
     const dates = [];
     let current = new Date(startDate);
 
-    while (current <= new Date(endDate)) {
-        dates.push(current.toISOString().split("T")[0]);
+    while (current < new Date(endDate)) {
+        dates.push(formatDateLocal(current));
         current.setDate(current.getDate() + 1);
     }
 
     const results = [];
 
-    console.log(`Number of days: ${dates.length}`)
-    // for (const d of dates) {
-    //     const daily = await fitbitService.getDailyActivities(accessToken, d);
-    //     daily.reward = calculateReward(daily)
-    //     await saveDailyReward(userId, daily.date, daily.activities.length, daily.reward);
-    //     results.push(daily);
-    // }
+    if (dates.length > fitbitService.getAPIRequestLimit())
+        throw new Error('Failed to sync rewards, sync range is to big, should be at max: '
+            + fitbitService.getAPIRequestLimit() + ', but was:' + dates.length);
 
+    console.log(`Number of days: ${dates.length}`)
+    for (const d of dates) {
+        const daily = await fitbitService.getDailyActivities(accessToken, d);
+        daily.reward = calculateReward(daily)
+        await saveDailyReward(userId, daily.date, daily.activities.length, daily.reward);
+        results.push(daily);
+    }
+    await saveUser(new User({
+        userId: userId,
+        lastSync: endDate
+    }))
     return results;
+}
+
+function formatDateLocal(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
 }
 
 module.exports = {calculateReward, syncRewardsFromRange};

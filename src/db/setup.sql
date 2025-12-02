@@ -20,6 +20,8 @@ CREATE TABLE IF NOT EXISTS users
     access_token     TEXT,
     refresh_token    TEXT,
     token_expires_at TIMESTAMP,                    -- optional: expiry
+    member_since     TIMESTAMP,
+    last_sync        TIMESTAMP,
     created_at       TIMESTAMP DEFAULT now(),
     updated_at       TIMESTAMP DEFAULT now()
 );
