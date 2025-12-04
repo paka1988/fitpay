@@ -38,7 +38,8 @@ async function loadDashboard() {
 
     const summary = data.activities.summary;
     const activeMinutes = (summary.fairlyActiveMinutes || 0) + (summary.veryActiveMinutes || 0);
-    const earnings = data.reward;
+    const earnings = data.reward_today;
+    console.log(data)
 
     const setText = (id, value) => {
         const el = document.getElementById(id);
@@ -48,7 +49,7 @@ async function loadDashboard() {
     setText('active-minutes', activeMinutes);
     setText('steps', (summary.steps || 0).toLocaleString());
     setText('earnings', `€${earnings.toFixed(2)}`);
-    setText('earnings_total', `€${data.reward_total.toFixed(2)}`);
+    setText('earnings_total', `€${Number(data.reward_total?.totalEarnings ?? 0).toFixed(2)}`);
 }
 
 // Beispielhafte Berechnung: z. B. 1 € pro Aktivität über 30 Minuten

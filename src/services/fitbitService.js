@@ -35,7 +35,7 @@ async function getTodayActivities(accessToken) {
 async function getDailyActivities(accessToken, date) {
 
     const url = `${FITBIT_API_BASE_URL}/1/user/-/activities/date/${date}.json`;
-
+    
     const res = await axios.get(url, {
         headers: {Authorization: `Bearer ${accessToken}`}
     });

@@ -3,8 +3,10 @@ require('dotenv').config();
 const express = require('express');
 const session = require('express-session');
 const path = require('path');
-const authRoutes = require('./routes/auth');
-const fitbitRoutes = require('./routes/fitbit');
+const authRoutes = require('./routes/authRoutes');
+const fitbitRoutes = require('./routes/fitbitRoutes');
+const cronRoutes = require("./routes/cronRoutes");
+
 const ensureAuthenticated = require('./middleware/authCheck');
 
 
@@ -29,6 +31,7 @@ server.use(
 // Auth-Routen
 server.use('/auth', authRoutes);
 server.use('/fitbit', fitbitRoutes);
+server.use('/cronRoutes', cronRoutes);
 
 // Geschützte Seiten
 server.get(['/dashboard.html', '/profile.html', '/activities.html', '/earnings.html'], ensureAuthenticated, (req, res) => {

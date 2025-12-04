@@ -2,6 +2,7 @@ const pool = require('../db/dbconnection');
 const fitbitService = require('../services/fitbitService');
 const {findAllUsers, saveUser} = require("./userService");
 const User = require("../entities/user");
+const {getToday, addDay, minusDay} = require('../utils/dateUtil');
 
 function calculateReward(activities) {
     const workouts = activities?.activities || [];
@@ -21,21 +22,30 @@ async function saveDailyReward(userId, date, activities, reward) {
 }
 
 async function getRewardsSummary(userId, startDate, endDate) {
-    const res = await pool.query(
-        `SELECT date, activities, reward
-         FROM fitpaydb.public.rewards
-         WHERE user_id = $1
-           AND date BETWEEN $2 AND $3
-         ORDER BY date `,
+
+    const totalEarningsQuery = `
+        SELECT COALESCE(SUM(reward), 0) AS total_earnings
+        FROM rewards
+        WHERE user_id = $1
+          AND date BETWEEN $2 AND $3
+    `;
+
+    const res = await pool.query(totalEarningsQuery,
         [userId, startDate, endDate]
     );
 
     return {
+        userId,
         startDate,
         endDate,
-        summary: res.rows,
-        totalEarnings: res.rows.reduce((sum, r) => sum + Number(r.reward), 0)
+        totalEarnings: res.rows[0].total_earnings
     };
+}
+
+async function syncRewardsForToday(accessToken, userId) {
+    const today = getToday();
+    const todayActivities = await fitbitService.getDailyActivities(accessToken, today);
+    await saveDailyReward(userId, todayActivities.date, todayActivities.activities.length, calculateReward(todayActivities));
 }
 
 async function syncRewardsFromRange(accessToken, userId, startDate, endDate) {
@@ -75,4 +85,4 @@ function formatDateLocal(date) {
     return `${year}-${month}-${day}`;
 }
 
-module.exports = {calculateReward, syncRewardsFromRange};
+module.exports = {calculateReward, syncRewardsFromRange, syncRewardsForToday, getRewardsSummary};

@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const fitbitService = require('../services/fitbitService');
 const rewardService = require('../services/rewardService');
+const userService = require('../services/userService')
+const dateUtil = require('../utils/dateUtil')
 
 router.get('/profile', async (req, res) => {
     const token = req.session.accessToken;
@@ -14,13 +16,16 @@ router.get('/profile', async (req, res) => {
 router.get('/rewards', async (req, res) => {
     const token = req.session.accessToken;
 
-    const profile = await fitbitService.getProfile(token);
-    const today = new Date().toISOString().split('T')[0]; // e.g., '2025-11-10'
-    const total_activities = await rewardService.syncRewardsFromRange(token, req.session.userId, profile.user.memberSince, today);
+    await rewardService.syncRewardsForToday(token, req.session.userId);
     const activities = await fitbitService.getTodayActivities(token);
-    const reward = rewardService.calculateReward(activities);
-    const reward_total = total_activities.reduce((sum, {activities}) => sum + activities, 0);
-    res.json({activities, reward, reward_total});
+    const reward_today = rewardService.calculateReward(activities);
+    const currentUser = await userService.findUserById(req.session.userId)
+    const reward_total = await rewardService.getRewardsSummary(
+        req.session.userId,
+        currentUser.last_sync || currentUser.member_since,
+        dateUtil.getToday()
+    )
+    res.json({activities, reward_today, reward_total});
 });
 
 module.exports = router;
