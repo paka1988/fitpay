@@ -4,7 +4,6 @@ const axios = require('axios');
 const qs = require('querystring');
 const userService = require('../services/userService')
 const fitbitService = require('../services/fitbitService')
-const User = require('../entities/user')
 
 const {FITBIT_CLIENT_ID, FITBIT_CLIENT_SECRET, REDIRECT_URI} = process.env;
 

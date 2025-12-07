@@ -1,8 +1,7 @@
 const pool = require('../db/dbconnection');
 const fitbitService = require('../services/fitbitService');
-const {findAllUsers, saveUser, findUserById} = require("./userService");
-const User = require("../entities/user");
-const {getToday, addDay, minusDay} = require('../utils/dateUtil');
+const {saveUser, findUserById} = require("./userService");
+const {getToday} = require('../utils/dateUtil');
 
 function calculateReward(activities) {
     const workouts = activities?.activities || [];
