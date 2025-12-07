@@ -120,6 +120,7 @@ async function loadProfile() {
                 <div class="card-body">
                     <h5 class="card-title">${data.user.displayName}</h5>
                     <p class="card-text"><strong>Mitglied Seit:</strong> ${data.user.memberSince}</p></p>
+                    <p class="card-text"><strong>Synchronisiert am:</strong> ${formatDate(data.lastSync)}</p>
                     <p class="card-text"><strong>Alter:</strong> ${data.user.age}</p>
                     <p class="card-text"><strong>Schritte-Ziel:</strong> ${data.user.topBadges.length} Badges</p>
                     ${data.user.avatar ? `<img src="${data.user.avatar}" class="img-fluid rounded mt-3" alt="Avatar">` : ''}
@@ -185,6 +186,16 @@ async function loadPartial(filePath, containerId) {
     }
 }
 
+function formatDate(dateString, timeZone = "Europe/Berlin") {
+    const d = new Date(dateString);
+    const fmt = new Intl.DateTimeFormat("en-CA", {
+        timeZone,
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit"
+    });
+    return fmt.format(d);
+}
 
 // --- Global verfügbar machen ---
 window.checkAuth = checkAuth;

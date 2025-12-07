@@ -2,17 +2,17 @@ const express = require("express");
 const router = express.Router();
 const cronManager = require("../cron/cronManager");
 
-router.post("/cron/start", (req, res) => {
+router.post("/start", (req, res) => {
     const result = cronManager.start();
     res.json(result);
 });
 
-router.post("/cron/stop", (req, res) => {
+router.post("/stop", (req, res) => {
     const result = cronManager.stop();
     res.json(result);
 });
 
-router.get("/cron/status", (req, res) => {
+router.get("/status", (req, res) => {
     const status = cronManager.status();
     res.json(status);
 });

@@ -10,6 +10,10 @@ router.get('/profile', async (req, res) => {
     if (!token) return res.status(401).send('Nicht eingeloggt');
 
     const profile = await fitbitService.getProfile(token);
+    const currentUser = await userService.findUserById(req.session.userId);
+    profile.lastSync = currentUser.lastSync;
+    console.log(currentUser)
+    console.log(profile)
     res.json(profile);
 });
 
@@ -22,7 +26,7 @@ router.get('/rewards', async (req, res) => {
     const currentUser = await userService.findUserById(req.session.userId)
     const reward_total = await rewardService.getRewardsSummary(
         req.session.userId,
-        currentUser.last_sync || currentUser.member_since,
+        currentUser.memberSince,
         dateUtil.getToday()
     )
     res.json({activities, reward_today, reward_total});

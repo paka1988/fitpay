@@ -72,15 +72,16 @@ router.get('/fitbit/callback', async (req, res) => {
         // ----------------------------------------
         const existingUser = await userService.findUserById(user_id);
         const profile = await fitbitService.getProfile(access_token)
-        await userService.saveUser({
-            userId: user_id,
-            accessToken: access_token,
-            refreshToken: refresh_token,
-            tokenExpiresAt: new Date(Date.now() + expires_in * 1000),
-            memberSince: profile.user.memberSince,
-            createdAt: Date.now(),
-            lastSync: existingUser ? existingUser.lastSync : profile.user.memberSince
-        })
+        if (!existingUser) {
+            await userService.saveUser({
+                userId: user_id,
+                accessToken: access_token,
+                refreshToken: refresh_token,
+                tokenExpiresAt: new Date(Date.now() + expires_in * 1000),
+                memberSince: profile.user.memberSince,
+                createdAt: Date.now()
+            })
+        }
         console.log(`✅ Fitbit user saved/updated for user_id=${user_id}`);
 
         // ----------------------------------------

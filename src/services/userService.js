@@ -62,7 +62,16 @@ const findUserById = async (userId) => {
         }
 
         // Return the user data (assuming you're returning the first match)
-        return result.rows[0];
+        return new User({
+            userId: result.rows[0].user_id,
+            accessToken: result.rows[0].access_token,
+            refreshToken: result.rows[0].refresh_token,
+            tokenExpiresAt: result.rows[0].token_expires_at,
+            memberSince: result.rows[0].member_since,
+            lastSync: result.rows[0].last_sync,
+            createdAt: result.rows[0].created_at,
+            updatedAt: result.rows[0].updated_at
+        })
     } catch (error) {
         console.error(`Error finding user with ID ${userId}:`, error);
         throw new Error('Failed to find user.');

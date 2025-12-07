@@ -1,6 +1,6 @@
 const pool = require('../db/dbconnection');
 const fitbitService = require('../services/fitbitService');
-const {findAllUsers, saveUser} = require("./userService");
+const {findAllUsers, saveUser, findUserById} = require("./userService");
 const User = require("../entities/user");
 const {getToday, addDay, minusDay} = require('../utils/dateUtil');
 
@@ -71,10 +71,11 @@ async function syncRewardsFromRange(accessToken, userId, startDate, endDate) {
         await saveDailyReward(userId, daily.date, daily.activities.length, daily.reward);
         results.push(daily);
     }
-    await saveUser(new User({
-        userId: userId,
-        lastSync: endDate
-    }))
+
+    const existingUser = await findUserById(userId);
+    existingUser.lastSync = endDate;
+
+    await saveUser(existingUser);
     return results;
 }
 

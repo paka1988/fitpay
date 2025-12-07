@@ -50,4 +50,4 @@ function formatDate(date) {
 }
 
 // Export as module
-module.exports = {getToday, addDay, minusDay};
+module.exports = {getToday, addDay, minusDay, formatDate};

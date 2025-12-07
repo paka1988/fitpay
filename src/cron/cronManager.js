@@ -2,6 +2,7 @@ const cron = require("node-cron");
 const syncUserActivities = require("./tasks/syncUserActivities.js");
 
 let task = null;
+let isRunning = false; // <-- TRACK THE RUN STATE YOURSELF
 
 function createCronJob() {
     return cron.schedule("* * * * *", async () => {
@@ -13,7 +14,7 @@ function createCronJob() {
             console.error("Cron job failed:", err);
         }
     }, {
-        scheduled: false // IMPORTANT: do not start automatically
+        scheduled: false
     });
 }
 
@@ -21,24 +22,30 @@ module.exports = {
     start() {
         if (!task) task = createCronJob();
 
-        if (task.running) {
-            return {started: false, message: "Cron job already running."};
+        if (isRunning) {
+            return { started: false, message: "Cron job already running." };
         }
+
         task.start();
-        return {started: true, message: "Cron job started."};
+        isRunning = true; // <-- UPDATE FLAG
+
+        return { started: true, message: "Cron job started." };
     },
 
     stop() {
-        if (!task?.running) {
-            return {stopped: false, message: "Cron job is not running."};
+        if (!isRunning) {
+            return { stopped: false, message: "Cron job is not running." };
         }
+
         task.stop();
-        return {stopped: true, message: "Cron job stopped."};
+        isRunning = false; // <-- UPDATE FLAG
+
+        return { stopped: true, message: "Cron job stopped." };
     },
 
     status() {
         return {
-            running: task?.running ?? false,
+            running: isRunning,
             scheduleDefined: !!task
         };
     }
