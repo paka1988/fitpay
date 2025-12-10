@@ -171,6 +171,4 @@ Temporary Items
 # Generated files
 src/public/vendor
 
-src/db/ca.pem
-
 fitpay.postman_collection.json
