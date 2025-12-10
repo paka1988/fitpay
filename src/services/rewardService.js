@@ -85,7 +85,7 @@ async function syncRewardsFromRange(accessToken, userId, startDate, endDate) {
         // -----------------------------
         // PROCESS DAILY REWARD
         // -----------------------------
-        daily.reward = calculateReward(daily.activities);
+        daily.reward = calculateReward(daily);
         await saveDailyReward(userId, daily.date, daily.activities.length, daily.reward);
 
         results.push(daily);
