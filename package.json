@@ -81,6 +81,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "copy-bootstrap": "mkdir -p src/public/vendor/bootstrap && cp -r node_modules/bootstrap/dist/* src/public/vendor/bootstrap/",
     "postinstall": "npm run copy-bootstrap",
+    "start": "node src/server.js",
     "start_local": "NODE_ENV=local node src/server.js",
     "migrate_local": "NODE_ENV=local node src/db/migrate.js",
     "migrate_prod": "NODE_ENV=production node src/db/migrate.js",
