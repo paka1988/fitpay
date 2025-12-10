@@ -8,8 +8,6 @@ CREATE TABLE rewards
     date       DATE           NOT NULL,
     activities INTEGER        NOT NULL,
     reward     DECIMAL(10, 2) NOT NULL DEFAULT 0,
-    created_at TIMESTAMP               DEFAULT NOW(),
-    updated_at TIMESTAMP               DEFAULT NOW(),
     CONSTRAINT daily_unique UNIQUE (user_id, date)
 );
 

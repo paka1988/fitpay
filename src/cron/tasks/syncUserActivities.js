@@ -1,57 +1,89 @@
-const {findAllUsers} = require('../../services/userService')
+const {findAllUsers, findUserById} = require('../../services/userService')
 const {syncRewardsFromRange} = require('../../services/rewardService')
 const {getAPIRequestLimit} = require('../../services/fitbitService')
 
-exports.task = async (ctx) => {
-    try {
-        const users = await findAllUsers();
+exports.task = async ({userId = null, startDate = null} = {}) => {
 
-        if (!users?.length) {
-            console.warn('No users found');
-            return 'No users synchronized.';
+    console.log("🔄 Syncing with parameters:", {userId, startDate});
+
+    try {
+        // 1️⃣ Fetch only necessary users
+        let users = [];
+
+        if (userId) {
+            const user = await findUserById(userId);
+            if (!user) {
+                console.warn(`❗ User ${userId} not found — nothing to sync.`);
+                return `No user with id ${userId}`;
+            }
+            users = [user];
+        } else {
+            users = await findAllUsers();
         }
 
-        const today = new Date().toISOString().split('T')[0];
+        if (!users?.length) {
+            console.warn("⚠ No users found");
+            return "No users synchronized.";
+        }
+
+        const today = new Date().toISOString().split("T")[0];
         const syncedUsers = [];
 
+        // 2️⃣ Parallel sync
         const promises = users.map(async (user) => {
-            const lastSync = user.lastSync || user.memberSince;
-
-            if (!isValidDate(lastSync)) {
-                console.error(`Invalid date for user ${user.userId}: ${lastSync}`);
-                return;
-            }
-
-            const daysDiff = calculateDays(lastSync, today);
-            const limit = getAPIRequestLimit();
-
-            const endDate = daysDiff < limit ? today : datePlusDays(lastSync, limit);
-
             try {
-                await syncRewardsFromRange(user.accessToken, user.userId, lastSync, endDate);
+                const lastSyncDate = startDate || user.lastSync || user.memberSince;
+
+                if (!isValidDate(lastSyncDate)) {
+                    console.error(`❌ Invalid date for user ${user.userId}: ${lastSyncDate}`);
+                    return;
+                }
+
+                // 3️⃣ Calculate date range
+                const limit = getAPIRequestLimit();
+                const daysDiff = calculateDays(lastSyncDate, today);
+
+                const endDate = daysDiff < limit ? today : datePlusDays(lastSyncDate, limit);
+
+                console.log(`📅 Syncing user ${user.userId}: ${lastSyncDate} → ${endDate}`);
+
+                // 4️⃣ Do actual sync
+                await syncRewardsFromRange(
+                    user.accessToken,
+                    user.userId,
+                    lastSyncDate,
+                    endDate
+                );
+
                 syncedUsers.push(user.userId);
-            } catch (error) {
-                console.error(`User ${user.userId} sync failed:`, error);
+            } catch (err) {
+                console.error(`❌ User ${user.userId} sync failed:`, err);
             }
         });
 
         await Promise.all(promises);
 
+        // 5️⃣ Summary
         if (!syncedUsers.length) {
-            return 'Sync finished, but no users were updated.';
+            return "Sync finished — but no users updated.";
         }
 
-        return `Task finished synchronization for users: ${syncedUsers.join(', ')}`;
+        const updatedUser = await findUserById(userId);
 
-    } catch (error) {
-        console.error('User sync task failed:', error);
-        return 'Task failed — check logs for details.';
+        return {
+            msg: `Task finished synchronization for users: ${syncedUsers.join(", ")}`,
+            lastSync: updatedUser.lastSync
+        };
+
+    } catch (err) {
+        console.error("🔥 User sync task failed:", err);
+        return "Task failed — check logs for details.";
     }
 };
 
 // --- Helpers ---
 function isValidDate(date) {
-    return date && !isNaN(new Date(date).getTime());
+    return date && !Number.isNaN(new Date(date).getTime());
 }
 
 function datePlusDays(dateStr, days) {
@@ -65,4 +97,17 @@ function calculateDays(startDate, endDate) {
     let end = new Date(endDate);
     let timeDifference = end - start;
     return timeDifference / (1000 * 3600 * 24);
+}
+
+exports.hasReachedToday = (lastSyncISO, tz = "Europe/Berlin") => {
+    const now = new Date().toLocaleString("en-US", {timeZone: tz});
+    const today = new Date(now);
+    today.setHours(0, 0, 0, 0);
+
+    const last = new Date(
+        new Date(lastSyncISO).toLocaleString("en-US", {timeZone: tz})
+    );
+    last.setHours(0, 0, 0, 0);
+
+    return last >= today;
 }

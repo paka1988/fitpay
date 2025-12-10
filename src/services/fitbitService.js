@@ -41,7 +41,16 @@ async function getDailyActivities(accessToken, date) {
     });
 
     const activities = res.data.activities || [];
-    return {date, activities};
+
+    const remaining = Number(res.headers["fitbit-rate-limit-remaining"]);
+    const reset = Number(res.headers["fitbit-rate-limit-reset"]);
+
+    return {
+        date,
+        activities,
+        remaining: Number.isNaN(remaining) ? null : remaining,
+        reset: Number.isNaN(reset) ? null : reset
+    };
 }
 
 function getAPIRequestLimit() {

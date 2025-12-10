@@ -1,8 +1,8 @@
 require('../loadEnv');
 require('dotenv').config();
 const {Pool} = require('pg');
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
 
 const isProduction = process.env.NODE_ENV === 'production';
 

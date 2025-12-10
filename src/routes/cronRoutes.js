@@ -3,7 +3,9 @@ const router = express.Router();
 const cronManager = require("../cron/cronManager");
 
 router.post("/start", (req, res) => {
-    const result = cronManager.start();
+    const { userId, startDate } = req.body;   // optional params
+
+    const result = cronManager.start({ userId, startDate });
     res.json(result);
 });
 

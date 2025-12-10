@@ -5,7 +5,7 @@ const {getToday} = require('../utils/dateUtil');
 
 function calculateReward(activities) {
     const workouts = activities?.activities || [];
-    const rewardPerWorkout = 2.0; // Beispiel: 2€ pro Training
+    const rewardPerWorkout = 2; // Beispiel: 2€ pro Training
     return workouts.length * rewardPerWorkout;
 }
 
@@ -52,31 +52,55 @@ async function syncRewardsFromRange(accessToken, userId, startDate, endDate) {
     const dates = [];
     let current = new Date(startDate);
 
-    while (current < new Date(endDate)) {
+    while (current <= new Date(endDate)) {
         dates.push(formatDateLocal(current));
         current.setDate(current.getDate() + 1);
     }
 
     const results = [];
 
-    if (dates.length > fitbitService.getAPIRequestLimit())
-        throw new Error('Failed to sync rewards, sync range is to big, should be at max: '
-            + fitbitService.getAPIRequestLimit() + ', but was:' + dates.length);
+    console.log(`Number of days: ${dates.length}`);
 
-    console.log(`Number of days: ${dates.length}`)
     for (const d of dates) {
+
+        // -----------------------------
+        // CALL FITBIT API + GET LIMITS
+        // -----------------------------
         const daily = await fitbitService.getDailyActivities(accessToken, d);
-        daily.reward = calculateReward(daily)
+
+        console.log(`Day synced: ${d} | remaining: ${daily.remaining}, reset: ${daily.reset}`);
+
+        // -----------------------------
+        // RATE LIMIT CHECK
+        // -----------------------------
+        if (daily.remaining !== null && daily.remaining < 10) {
+            const waitSec = daily.reset || 60;
+
+            console.log(`⚠ Fitbit rate-limit low (remaining=${daily.remaining}).`);
+            console.log(`⏳ Waiting ${waitSec} seconds before continuing...`);
+
+            await new Promise(res => setTimeout(res, waitSec * 1000));
+        }
+
+        // -----------------------------
+        // PROCESS DAILY REWARD
+        // -----------------------------
+        daily.reward = calculateReward(daily.activities);
         await saveDailyReward(userId, daily.date, daily.activities.length, daily.reward);
+
         results.push(daily);
     }
 
+    // -----------------------------
+    // UPDATE USER lastSync
+    // -----------------------------
     const existingUser = await findUserById(userId);
     existingUser.lastSync = endDate;
-
     await saveUser(existingUser);
+
     return results;
 }
+
 
 function formatDateLocal(date) {
     const year = date.getFullYear();
