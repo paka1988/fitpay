@@ -8,10 +8,10 @@ async function checkAuth() {
 
         if (!data.authenticated) {
             console.warn('Nicht eingeloggt – Redirect zu Login');
-            window.location.href = '/index.html';
+            globalThis.location.href = '/index.html';
         }
     } catch {
-        window.location.href = '/index.html';
+        globalThis.location.href = '/index.html';
     }
 }
 
@@ -120,7 +120,7 @@ async function loadProfile() {
                 <div class="card-body">
                     <h5 class="card-title">${data.user.displayName}</h5>
                     <p class="card-text"><strong>Mitglied Seit:</strong> ${data.user.memberSince}</p></p>
-                    <p class="card-text"><strong>Synchronisiert am:</strong> ${formatDate(data.lastSync)}</p>
+                    <p class="card-text"><strong>Synchronisiert bis zum:</strong> ${formatDate(data.lastSync)}</p>
                     <p class="card-text"><strong>Alter:</strong> ${data.user.age}</p>
                     <p class="card-text"><strong>Schritte-Ziel:</strong> ${data.user.topBadges.length} Badges</p>
                     ${data.user.avatar ? `<img src="${data.user.avatar}" class="img-fluid rounded mt-3" alt="Avatar">` : ''}
@@ -198,8 +198,8 @@ function formatDate(dateString, timeZone = "Europe/Berlin") {
 }
 
 // --- Global verfügbar machen ---
-window.checkAuth = checkAuth;
-window.fetchData = fetchData;
-window.loadDashboard = loadDashboard;
-window.loadActivities = loadActivities;
-window.showErrorMessage = showErrorMessage;
+globalThis.checkAuth = checkAuth;
+globalThis.fetchData = fetchData;
+globalThis.loadDashboard = loadDashboard;
+globalThis.loadActivities = loadActivities;
+globalThis.showErrorMessage = showErrorMessage;
