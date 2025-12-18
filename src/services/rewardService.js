@@ -3,11 +3,43 @@ const fitbitService = require('../services/fitbitService');
 const {saveUser, findUserById} = require("./userService");
 const {getToday} = require('../utils/dateUtil');
 
-function calculateReward(activities) {
-    const workouts = activities?.activities || [];
-    const rewardPerWorkout = 2; // Beispiel: 2€ pro Training
-    return workouts.length * rewardPerWorkout;
+function calculateReward(activitiesData) {
+    const activities = activitiesData?.activities ?? [];
+
+    const REWARD_PER_ACTIVITY = 0.5;     // €
+    const DAILY_MAX_REWARD = 2;        // €
+    const MIN_DURATION_MS = 30 * 60 * 1000;
+
+    const ALLOWED_ACTIVITIES = new Set([
+        'Bike',
+        'Walking',
+        'Running',
+        'Swim'
+    ]);
+
+    let reward = 0;
+
+    for (const activity of activities) {
+        const durationOk = activity.duration >= MIN_DURATION_MS;
+
+        const typeOk =
+            ALLOWED_ACTIVITIES.has(activity.activityParentName) ||
+            ALLOWED_ACTIVITIES.has(activity.name);
+
+        if (durationOk && typeOk) {
+            reward += REWARD_PER_ACTIVITY;
+
+            // ---- Daily cap reached ----
+            if (reward >= DAILY_MAX_REWARD) {
+                reward = DAILY_MAX_REWARD;
+                break;
+            }
+        }
+    }
+
+    return reward;
 }
+
 
 async function saveDailyReward(userId, date, activities, reward) {
     const query = `
