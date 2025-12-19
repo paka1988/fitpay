@@ -11,8 +11,10 @@ router.get('/profile', async (req, res) => {
 
     const profile = await fitbitService.getProfile(token);
     const currentUser = await userService.findUserById(req.session.userId);
+    const userSyncStatus = await userService.checkUserSyncStatus(req.session.userId);
     profile.lastSync = currentUser.lastSync;
-    console.log(currentUser)
+    profile.fullySynchronized = userSyncStatus.isFullySynced;
+    console.log(userSyncStatus)
     console.log(profile)
     res.json(profile);
 });
