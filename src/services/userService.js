@@ -1,5 +1,8 @@
+const {subDays} = require('date-fns');
 const pool = require('../db/dbconnection');
 const User = require('../entities/user');
+const dateUtil = require('../utils/dateUtil')
+
 
 async function saveUser(user) {
     if (!user?.userId) {
@@ -78,5 +81,29 @@ const findUserById = async (userId) => {
     }
 };
 
+const checkUserSyncStatus = async (userId) => {
 
-module.exports = {saveUser, findAllUsers, findUserById};
+    const user = await findUserById(userId);
+    const startDate = user.memberSince
+    const endDate = subDays(new Date(), 1) // last complete Fitbit day
+
+    const {rows} = await pool.query(`
+        WITH expected_dates AS (SELECT generate_series($1::date, $2::date, interval '1 day')::date AS date)
+        SELECT to_char(e.date, 'YYYY-MM-DD') AS missing_date
+        FROM expected_dates e
+                 LEFT JOIN rewards r
+                           ON r.user_id = $3 AND r.date = e.date
+        WHERE r.date IS NULL
+        ORDER BY e.date;
+    `, [dateUtil.formatDate(startDate), dateUtil.formatDate(endDate), user.userId])
+
+    const missingDates = rows.map(r => r.missing_date)
+
+    return {
+        isFullySynced: missingDates.length === 0,
+        missingDates: missingDates
+    }
+}
+
+
+module.exports = {saveUser, findAllUsers, findUserById, checkUserSyncStatus};

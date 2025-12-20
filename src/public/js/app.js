@@ -123,6 +123,7 @@ async function loadProfile() {
                     <p class="card-text"><strong>Synchronisiert bis zum:</strong> ${formatDate(data.lastSync)}</p>
                     <p class="card-text"><strong>Alter:</strong> ${data.user.age}</p>
                     <p class="card-text"><strong>Schritte-Ziel:</strong> ${data.user.topBadges.length} Badges</p>
+                    <p class="card-text"><strong>Synchronized:</strong> ${data.fullySynchronized}</p>
                     ${data.user.avatar ? `<img src="${data.user.avatar}" class="img-fluid rounded mt-3" alt="Avatar">` : ''}
                 </div>
             </div>
