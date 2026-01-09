@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const axios = require('axios');
-const qs = require('querystring');
+const qs = require('node:querystring');
 const userService = require('../services/userService')
 const fitbitService = require('../services/fitbitService')
 
@@ -71,7 +71,16 @@ router.get('/fitbit/callback', async (req, res) => {
         // ----------------------------------------
         const existingUser = await userService.findUserById(user_id);
         const profile = await fitbitService.getProfile(access_token)
-        if (!existingUser) {
+        if (existingUser) {
+            // Update tokens and expiration for existing user
+            await userService.saveUser({
+                userId: user_id,
+                accessToken: access_token,
+                refreshToken: refresh_token,
+                tokenExpiresAt: new Date(Date.now() + expires_in * 1000)
+            });
+        } else {
+            // create new user
             await userService.saveUser({
                 userId: user_id,
                 accessToken: access_token,
