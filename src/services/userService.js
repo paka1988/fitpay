@@ -16,7 +16,6 @@ async function saveUser(user) {
             SET access_token     = EXCLUDED.access_token,
                 refresh_token    = EXCLUDED.refresh_token,
                 token_expires_at = EXCLUDED.token_expires_at,
-                member_since     = EXCLUDED.member_since,
                 last_sync        = EXCLUDED.last_sync,
                 updated_at       = now()
         RETURNING user_id, access_token, refresh_token, token_expires_at;

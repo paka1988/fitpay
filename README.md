@@ -46,6 +46,9 @@ docker run --name fit-pay-pg-db \
 docker run -it --rm --network bridge postgres \
   psql -h 172.17.0.2 -U fitpaydb_user -d fitpaydb
 
+# mock fitpay server
+postman-local --collection fitpay.postman_collection.json --port 3555
+
 ```
 
 ### Remote
