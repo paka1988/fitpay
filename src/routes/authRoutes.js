@@ -77,6 +77,7 @@ router.get('/fitbit/callback', async (req, res) => {
                 userId: user_id,
                 accessToken: access_token,
                 refreshToken: refresh_token,
+                lastSync: existingUser.lastSync,
                 tokenExpiresAt: new Date(Date.now() + expires_in * 1000)
             });
         } else {
