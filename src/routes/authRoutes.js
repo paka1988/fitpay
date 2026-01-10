@@ -4,6 +4,7 @@ const axios = require('axios');
 const qs = require('node:querystring');
 const userService = require('../services/userService')
 const fitbitService = require('../services/fitbitService')
+const cronManager = require('../cron/cronManager');
 
 const {FITBIT_CLIENT_ID, FITBIT_CLIENT_SECRET, REDIRECT_URI} = process.env;
 
@@ -91,7 +92,14 @@ router.get('/fitbit/callback', async (req, res) => {
                 createdAt: Date.now()
             })
         }
+
         console.log(`✅ Fitbit user saved/updated for user_id=${user_id}`);
+
+        // Start user sync as a background task (do not await)
+        cronManager.start({
+            userId: user_id,
+            startDate: existingUser ? existingUser.lastSync : profile.user.memberSince
+        })
 
         // ----------------------------------------
         // 6 Redirect zum Dashboard
