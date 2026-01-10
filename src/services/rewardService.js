@@ -100,7 +100,7 @@ async function syncRewardsFromRange(accessToken, userId, startDate, endDate) {
         // -----------------------------
         const daily = await fitbitService.getDailyActivities(accessToken, d);
 
-        console.log(`Day synced: ${d} | remaining: ${daily.remaining}, reset: ${daily.reset}`);
+        console.log(`User: ${userId} Day synced: ${d} | remaining: ${daily.remaining}, reset: ${daily.reset}`);
 
         // -----------------------------
         // RATE LIMIT CHECK
