@@ -2,7 +2,6 @@ const cron = require("node-cron");
 const syncUserActivities = require("./tasks/syncUserActivities.js");
 
 let task = null;
-let isRunning = false; // <-- TRACK THE RUN STATE YOURSELF
 
 function createCronJob(userId, startDate) {
     return cron.schedule("* * * * *", async () => {
@@ -17,16 +16,15 @@ function createCronJob(userId, startDate) {
 
             // ---- Auto-destroy when lastSync >= today ----
             if (lastSync && syncUserActivities.hasReachedToday(lastSync)) {
-                console.log("Reached today → auto-destroying cron task.");
+                console.log("Reached today → auto-destroying cron task.", {userId});
                 task.stop();
                 task.destroy();
                 task = null;
-                isRunning = false;
                 return;
             }
 
             if (lastSync) {
-                console.log("Updating startDate to:", lastSync);
+                console.log("Updating startDate to:", {lastSync, userId});
                 startDate = lastSync;
             }
 
@@ -45,32 +43,37 @@ module.exports = {
     start(options = {}) {
         const {userId = null, startDate = null} = options;
 
-        task = createCronJob(userId, startDate);
-
-        if (isRunning) {
-            return {started: false, message: "Cron job already running."};
+        if (task?.getStatus() === 'running') {
+            console.log(`Started for '${userId}', but is already running for user '${task.userId}'`)
+            return {started: false, message: `Cron job status is ${task.getStatus()}`};
         }
 
+        if (task?.getStatus() === 'idle') {
+            console.log(`Started for '${userId}', but is already idling for user '${task.userId}'`)
+            return {started: false, message: `Cron job status is ${task.getStatus()}`};
+        }
+
+        task = createCronJob(userId, startDate);
         task.start();
-        isRunning = true; // <-- UPDATE FLAG
+        task.userId = userId;
+
+        console.log(`Cron job started for user '${userId}'`)
 
         return {started: true, message: "Cron job started."};
     },
 
     stop() {
-        if (!isRunning) {
-            return {stopped: false, message: "Cron job is not running."};
+        if (task?.getStatus() === 'running' || task?.getStatus() === 'idle') {
+            task.destroy();
+            return {stopped: true, message: "Cron job was stopped."};
         }
 
-        task.destroy();
-        isRunning = false; // <-- UPDATE FLAG
-
-        return {stopped: true, message: "Cron job stopped."};
+        return {stopped: false, message: `Cron job status is ${task.getStatus()}`};
     },
 
     status() {
         return {
-            running: isRunning,
+            status: task.getStatus(),
             scheduleDefined: !!task
         };
     }
