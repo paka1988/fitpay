@@ -56,21 +56,20 @@ async function loadProfile() {
         const data = await fetchData('/fitbit/profile');
         if (!data) return;
 
-        document.getElementById('profile').innerHTML = `
-        <div class="col-12 col-md-6">
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title">${data.user.displayName}</h5>
-                    <p class="card-text"><strong>Mitglied Seit:</strong> ${data.user.memberSince}</p></p>
-                    <p class="card-text"><strong>Synchronisiert bis zum:</strong> ${formatDate(data.lastSync)}</p>
-                    <p class="card-text"><strong>Alter:</strong> ${data.user.age}</p>
-                    <p class="card-text"><strong>Schritte-Ziel:</strong> ${data.user.topBadges.length} Badges</p>
-                    <p class="card-text"><strong>Synchronized:</strong> ${data.fullySynchronized}</p>
-                    ${data.user.avatar ? `<img src="${data.user.avatar}" class="img-fluid rounded mt-3" alt="Avatar">` : ''}
-                </div>
-            </div>
-        </div>
-        `;
+        const setText = (id, value) => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = value;
+        };
+
+        setText('card-title', data.user.displayName);
+        setText('member-since', data.user.memberSince);
+        setText('last-sync', formatDate(data.lastSync));
+        setText('user-age', data.user.age);
+        setText('fully-synchronized', data.fullySynchronized);
+
+        const el = document.getElementById('user-avatar');
+        let avatarImg = `<img src="${data.user.avatar}" class="img-fluid rounded mt-3" alt="Avatar">`;
+        el.innerHTML = `${data.user.avatar ? avatarImg : ''}`;
     } catch (err) {
         console.error('Error loading profile:', err);
         showErrorMessage('Fehler beim Laden des Profils.');
