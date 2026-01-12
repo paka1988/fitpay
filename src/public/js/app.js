@@ -39,7 +39,6 @@ async function loadDashboard() {
     const summary = data.activities.summary;
     const activeMinutes = (summary.fairlyActiveMinutes || 0) + (summary.veryActiveMinutes || 0);
     const earnings = data.reward_today;
-    console.log(data)
 
     const setText = (id, value) => {
         const el = document.getElementById(id);

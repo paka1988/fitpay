@@ -14,8 +14,6 @@ router.get('/profile', async (req, res) => {
     const userSyncStatus = await userService.checkUserSyncStatus(req.session.userId);
     profile.lastSync = currentUser.lastSync;
     profile.fullySynchronized = userSyncStatus.isFullySynced;
-    console.log(userSyncStatus)
-    console.log(profile)
     res.json(profile);
 });
 
