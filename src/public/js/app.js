@@ -51,63 +51,6 @@ async function loadDashboard() {
     setText('earnings_total', `€${Number(data.reward_total?.totalEarnings ?? 0).toFixed(2)}`);
 }
 
-// Beispielhafte Berechnung: z. B. 1 € pro Aktivität über 30 Minuten
-async function loadEarnings() {
-    const container = document.getElementById('earnings');
-
-    try {
-        const data = await fetchData('/fitbit/rewards'); // oder fetchFitbitRewards()
-        if (!data) {
-            container.innerHTML = '<p class="text-danger">Fehler beim Laden der Einnahmen.</p>';
-            return;
-        }
-
-        const {activities, reward} = data;
-        const activeMinutes = (activities.summary.fairlyActiveMinutes || 0) + (activities.summary.veryActiveMinutes || 0);
-
-        const setText = (id, value) => {
-            const el = document.getElementById(id);
-            if (el) el.textContent = value;
-        };
-
-        setText('active-minutes', activeMinutes);
-        setText('steps', (activities.summary.steps || 0).toLocaleString());
-        setText('earning-details', `€${reward.toFixed(2)}`);
-    } catch (err) {
-        console.error('Error loading earnings:', err);
-        container.innerHTML = '<p class="text-danger">Fehler beim Laden der Einnahmen.</p>';
-    }
-}
-
-// --- Activities Page ---
-async function loadActivities() {
-    const container = document.getElementById('activities');
-
-    const setText = (id, value) => {
-        const el = document.getElementById(id);
-        if (el) el.textContent = value;
-    };
-
-    try {
-        const data = await fetchData('/fitbit/today'); // nutzt fetchFitbitDay() Utility
-        if (!data.activities) {
-            container.innerHTML = '<p class="text-danger">Fehler beim Laden der Aktivitäten.</p>';
-            return;
-        }
-
-        const summary = data.activities.summary || {};
-        const activeMinutes = (summary.fairlyActiveMinutes || 0) + (summary.veryActiveMinutes || 0);
-
-        setText('steps', (summary.steps || 0).toLocaleString());
-        setText('calories', (summary.caloriesOut || 0).toLocaleString());
-        setText('active-minutes', activeMinutes);
-        setText('distance', `${(summary.distances?.[0]?.distance || 0).toFixed(2)}`);
-    } catch (err) {
-        console.error('Error loading activities:', err);
-        container.innerHTML = '<p class="text-danger">Fehler beim Laden der Aktivitäten.</p>';
-    }
-}
-
 async function loadProfile() {
     try {
         const data = await fetchData('/fitbit/profile');
