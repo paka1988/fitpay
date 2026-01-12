@@ -14,8 +14,8 @@ router.post("/stop", (req, res) => {
     res.json(result);
 });
 
-router.get("/status", (req, res) => {
-    const status = cronManager.status();
+router.get("/status", async (req, res) => {
+    const status = await cronManager.status();
     res.json(status);
 });
 

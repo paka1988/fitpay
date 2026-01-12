@@ -76,6 +76,24 @@ async function loadProfile() {
     }
 }
 
+async function loadSyncCard() {
+    const res = await fetch("/cronRoutes/status", { credentials: "include" });
+
+    const data = await res.json();
+
+    // Fill UI
+    document.getElementById("sync-status").innerText = data.status;
+    document.getElementById("sync-status").className = "badge " + (data.status === 'success' ? "bg-success" : "bg-secondary");
+    document.getElementById("sync-progress-date").innerText = data.lastSync || "-";
+    document.getElementById("sync-missing-count").innerText = data.missingDates?.length ?? "-";
+
+    // Disable start button while running
+    document.querySelector("button.btn-success").disabled = data.status === 'running';
+
+    // Disable stop button if not running
+    document.querySelector("button.btn-danger").disabled = data.status !== 'running';
+}
+
 // --- Error Template Anzeigen ---
 function showErrorMessage(message) {
     const template = document.getElementById('error-template');
