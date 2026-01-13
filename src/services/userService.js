@@ -100,7 +100,8 @@ const checkUserSyncStatus = async (userId) => {
 
     return {
         isFullySynced: missingDates.length === 0,
-        missingDates: missingDates
+        missingDates: missingDates,
+        lastSync: user.lastSync
     }
 }
 

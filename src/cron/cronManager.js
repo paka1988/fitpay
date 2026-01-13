@@ -1,5 +1,6 @@
 const cron = require("node-cron");
 const syncUserActivities = require("./tasks/syncUserActivities.js");
+const userService = require('../services/userService')
 
 let task = null;
 
@@ -71,9 +72,15 @@ module.exports = {
         return {stopped: false, message: `Cron job status is ${task.getStatus()}`};
     },
 
-    status() {
+    async status(userId) {
+
+        const userStatus = await userService.checkUserSyncStatus(userId);
+
         return {
-            status: task.getStatus(),
+            userId: userId,
+            status: task?.getStatus(),
+            lastSync: userStatus.lastSync,
+            missingDates: userStatus.missingDates,
             scheduleDefined: !!task
         };
     }
