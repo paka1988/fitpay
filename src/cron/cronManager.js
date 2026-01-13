@@ -72,24 +72,15 @@ module.exports = {
         return {stopped: false, message: `Cron job status is ${task.getStatus()}`};
     },
 
-    async status() {
+    async status(userId) {
 
-        console.log("status");
-
-        if (task?.userId) {
-            const user = await userService.checkUserSyncStatus(task.userId);
-            task.lastSync = user.lastSync;
-            return {
-                userId: task.userId,
-                status: task.getStatus(),
-                scheduleDefined: !!task,
-                lastSync: user.lastSync,
-                missingDates: user.missingDates
-            };
-        }
+        const userStatus = await userService.checkUserSyncStatus(userId);
 
         return {
+            userId: userId,
             status: task?.getStatus(),
+            lastSync: userStatus.lastSync,
+            missingDates: userStatus.missingDates,
             scheduleDefined: !!task
         };
     }

@@ -3,9 +3,10 @@ const router = express.Router();
 const cronManager = require("../cron/cronManager");
 
 router.post("/start", (req, res) => {
-    const { userId, startDate } = req.body;   // optional params
+    const {startDate} = req.body;
+    const userId = req.session.userId;
 
-    const result = cronManager.start({ userId, startDate });
+    const result = cronManager.start({userId, startDate});
     res.json(result);
 });
 
@@ -15,7 +16,7 @@ router.post("/stop", (req, res) => {
 });
 
 router.get("/status", async (req, res) => {
-    const status = await cronManager.status();
+    const status = await cronManager.status(req.session.userId);
     res.json(status);
 });
 

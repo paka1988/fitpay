@@ -77,7 +77,7 @@ async function loadProfile() {
 }
 
 async function loadSyncCard() {
-    const res = await fetch("/cronRoutes/status", { credentials: "include" });
+    const res = await fetch("/cronRoutes/status", {credentials: "include"});
 
     const data = await res.json();
 
@@ -88,10 +88,32 @@ async function loadSyncCard() {
     document.getElementById("sync-missing-count").innerText = data.missingDates?.length ?? "-";
 
     // Disable start button while running
-    document.querySelector("button.btn-success").disabled = data.status === 'running';
+    document.querySelector("button.btn-success").disabled = data.status === 'running' || data.status === 'idle';
 
-    // Disable stop button if not running
-    document.querySelector("button.btn-danger").disabled = data.status !== 'running';
+    // Disable stop button if not ( running or idling )
+    document.querySelector("button.btn-danger").disabled = !(['running', 'idle'].includes(data.status));
+}
+
+async function startSync() {
+    const startDate = document.getElementById("sync-start-date").value;
+
+    await fetch("/cronRoutes/start", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        credentials: "include",
+        body: JSON.stringify({startDate})
+    });
+
+    setTimeout(loadSyncCard, 300);
+}
+
+async function stopSync() {
+    await fetch("/cronRoutes/stop", {
+        method: "POST",
+        credentials: "include"
+    });
+
+    setTimeout(loadSyncCard, 300);
 }
 
 // --- Error Template Anzeigen ---
